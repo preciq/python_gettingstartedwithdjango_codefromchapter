@@ -1,0 +1,112 @@
+python3 -m venv ll_env
+# This creates a new python environment; we call it ll_env
+
+source ll_env/bin/activate
+# this activates (takes us into) the created ll_env environment
+# now, anything we install is only installed inside of the ll_env environment
+# it is NOT installed globally
+
+deactivate
+# this lets us leave the ll_env environment and return to the global environment
+
+pip install --upgrade pip
+# installs (and upgrades) pip inside the ll_env environment
+# note that we don't need pip3 here since this is not global
+
+pip install django
+# installs django for our ll_env environment
+
+django-admin startproject ll_project .
+# creates a new project in the root directory (highest level, in this case the same folder as the ll_env environment)
+    # that's why we use '.', to specify that this task should happen in the root directory
+# it is called ll_project
+
+python manage.py migrate
+# manage.py is created by default in a django project
+# it has basic commands to manage various aspects of a Django project, such as database migrations
+# the commands to modify (and create) a database are contained in manage.py
+# so when we run manage.py alongside migrate, we are telling django to modify (or create if this is the first time) a database
+# the result is a db.sqlite3 database in the directory
+# migrate = modify/create
+
+python manage.py runserver
+# this executes the django application (deploys it for usage, typically on port 8000 on the localhost)
+    # have it go on a different port via --> manage.py runserver 8001
+        # this runs on port 8001
+
+# the above lines basically create the backend for the app (the server where the app is hosted)
+# the front end is created below
+
+# create another terminal window for this one, leave the app running
+python manage.py startapp learning_logs
+# this line creates the infrastructure for the app (the apps front end)
+# we will call the app "learning_logs"
+
+# we now open one of the files created by the "startapp" command, "models.py", in the newly created "learning_logs"
+# here, we added a new Model class which defines how we want to save some data (specifically the column structure in the SQL database)
+# and then we added our newly created app "learning_logs" to "settings.py" in ll_project, so that it is included in the project
+
+# however, we need to update the database so that it takes into account our desired changes and defined structure in "Topic"
+python manage.py makemigrations learning_logs
+# this line modifies the database to accomodate the desired Models defined in learning_logs (just "Topic" for now)
+    # I think this line actually makes a new table in the SQL database called "Topic", which has the fields defined in "Topic" as columns (i.e. text, date_added)
+# note that these changes have not yet been applied to the database. For that: 
+python manage.py migrate
+# we need this command. This applies the changes to the database
+
+# By default, django applications come with a section specifically for admins
+# we can create "super users", basically admins, using the following commands:
+python manage.py createsuperuser
+# this prompts user to create a super user (username prompt, email address and password)
+
+# to define the data/models a super user can interact with, we define them in the "admin.py" module in the app directory (learning_logs)
+# we add the Topic model to admin.py (see file for more) so that admin users have access to it
+
+# we then login to the application (via the UI, using the admin credentials we just created with "manage.py createsuperuser")
+    # login as an admin at the url http://localhost:8000/admin/
+# we should see the some default sections for admin generated, as well as a section for our app "learning_logs", along with a "Topic" field, which is editable
+    # we can add Topics using the + sign. Notice how we are asked to input some "Text" in a text field, which matches what we put in models.py in the Topic class
+
+# we can add some more Models so that they too are displayed on the website, i.e. an "Entry" model
+    # multiple Entries would be linked to a single topic (i.e. a user is charting progress on that topic)
+
+# after updating the Entry class, we must do what we did before, update the database. This again involves 2 steps:
+python manage.py makemigrations learning_logs
+python manage.py migrate
+
+# We also update the admin.py module in learning_logs to have Entries
+# the expected behavior is already defined via the database relationship/data structure in models.py
+
+# we can explore the data within the DB using django shell (i.e. the entries we've added, topics, etc.)
+python manage.py shell
+# run the following to see all the topics: 
+from learning_logs.models import Topic
+Topic.objects.all()
+# notice how this is python code. Essentially, the python shell allows us to open a (python) terminal into our django application and run python commands directly against the app
+
+# a for loop to print all the topics, line by line: 
+topics = Topic.objects.all()
+for topic in topics:
+(Shift + Enter, then tab)     print(topic.id, topic)
+(Shift + Enter, then tab)
+(Enter)
+
+# prints the first topic. interestingly the index starts at 1, not 0
+t = Topic.objects.get(id=1)
+t.text
+
+# prints the date_added field of the first topic
+t.date_added
+datetime.datetime(2022, 5, 20, 3, 33, 36, 928759, tzinfo=datetime.timezone.utc)
+
+# shows all entries related to the topic
+t.entry_set.all()
+
+
+# So far, we have only been using the default UI (the "view" of the application) provided by django
+# we can improve upon this by creating custom views (i.e. a defined home page view) and make this view to a particular url
+    # i.e. localhost:8000/home will take us to the homepage
+# we do this in urls.py module, in the ll_project folder
+# this is further linked to the urls.py module in the learning_logs folder
+    # which points to templates stored in /learning_logs/templates/learning_logs
+# with all of these changes done, now if we go to the baseurl (http://127.0.0.1:8000/), we should see the specified template we added with the above commands

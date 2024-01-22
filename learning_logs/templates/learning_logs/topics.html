@@ -1,0 +1,19 @@
+{% extends 'learning_logs/base.html' %}
+<!--Inherits from base.html-->
+{% block content %}
+
+<ul>
+    {% for topic in topics %}
+    <li>
+        <a href="{% url 'learning_logs:topic' topic.id %}">
+            {{ topic.text }}</a>
+    </li>
+    <!--makes each Topic text a clickable link, to go to that topics Topic page-->
+    {% empty %}
+    <li>No topics have been added yet.</li>
+    {% endfor %}
+</ul>
+<!-- Uses a for loop (for topic in topics) to take each individual topic (provided in views.py) and display them in an <li> tag on the page -->
+
+
+{% endblock content %}

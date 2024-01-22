@@ -1,0 +1,14 @@
+<!-- This is a base page; other templates will inherit (and display) the elements shown here -->
+<p>
+    <a href="{% url 'learning_logs:index' %}">Learning Log</a>
+    <!--Link to the home (base url) page-->
+</p>
+    
+<p>
+    <a href="{% url 'learning_logs:index' %}">Learning Log</a> -
+    <!--Another link to the home page-->
+    <a href="{% url 'learning_logs:topics' %}">Topics</a>
+    <!--Links to each individual topic (for use primarily in /topics)-->
+</p>
+
+{% block content %}{% endblock content %}
